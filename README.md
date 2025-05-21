@@ -1,4 +1,3 @@
-
 # 🧠 GPT Pipeline Hub
 
 A modular, secure, and production-grade **prompt lifecycle management system** for large language models (LLMs), built for **classification, extraction, and matching** use cases. Designed for enterprise-grade deployment on AWS ECS, with CI/CD, encryption, and GDPR compliance baked in.
@@ -153,3 +152,15 @@ Ready for:
 - Team contributions
 - Prompt onboarding
 - Secure AWS deployment
+
+---
+
+
+## 📄 License
+
+This project is licensed under a customized [MIT License ](LICENSE.txt "double-click")with additional restrictions.
+
+You are free to use, modify, and distribute this code for non-commercial purposes.
+**However, commercial usage, SaaS deployment, or using the prompt templates and evaluation logic for model training or reverse engineering is strictly prohibited without prior written permission.**
+
+Please review the full [LICENSE](LICENSE.txt "double-click") file for details.
