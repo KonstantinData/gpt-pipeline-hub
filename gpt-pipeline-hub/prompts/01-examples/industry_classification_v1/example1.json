@@ -1,0 +1,8 @@
+{
+  "input": {
+    "example_field": "value"
+  },
+  "expected": {
+    "result": "Processed {'example_field': 'value'}"
+  }
+}
