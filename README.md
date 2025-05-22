@@ -6,30 +6,40 @@ A modular, secure, and production-grade **prompt lifecycle management system** f
 
 ## 📌 Overview
 
-This repository serves as the **source of truth** for managing versioned prompt templates, execution pipelines, infrastructure-as-code, and deployment workflows.
+This repository serves as the **source of truth** for managing versioned prompt templates, execution pipelines, infrastructure-as-code, and deployment workflows — fully aligned with Architect Mode.
 
 Supported tasks:
 
-- ✅ Use Case Extraction
-- ✅ Industry Classification
-- ✅ Company Matching
-- ✅ Contact Extraction
+* ✅ Feature Determination
+* ✅ Use Case Determination
+* ✅ Industry Classification
+* ✅ Company Assignment
+* ✅ Contact Assignment
 
 ---
 
-## 📁 Repository Structure
+## 📁 Repository Structure (Architect Mode)
 
 ```
-📦 gpt-pipeline-hub/
-┣ 📄 README.md               ← Project documentation
-┣ 📄 pyproject.toml          ← Python packaging
-┣ 📄 requirements.lock       ← Locked prod dependencies
-┣ 📂 src/gpt_pipeline_hub/   ← Main pipeline logic (to be implemented)
-┣ 📂 prompts/                ← Prompt templates & metadata (per topic)
-┣ 📂 cli/                    ← CLI tools: validate, score, run
-┣ 📂 infra/                  ← Terraform for S3, IAM, ECS setup
-┣ 📂 tests/                  ← Unit/integration tests
-┣ 📂 .github/workflows/      ← GitHub Actions for CI/CD
+gpt-pipeline-hub/
+├── prompts/
+│   ├── 00-templates/       # Reusable building blocks and components
+│   ├── 01-examples/        # Sample input/output pairs for each prompt
+│   ├── 02-production/      # Validated prompt YAMLs, versioned
+│   ├── 03-metadata/        # Prompt description, constraints, input/output schema
+│   ├── 04-evals/           # CI evaluation outputs, scorecards
+│   └── 98-drafts/          # Exploratory drafts, early-stage iterations
+├── cli/                    # Prompt runners, validators, scorers
+├── scripts/                # Setup, promotion, evaluation tools
+├── tests/                  # Unit/integration tests
+├── infra/                  # Terraform modules: S3, IAM, ECS
+├── evals/                  # Central benchmark definitions and mappings
+├── docs/                   # Architecture, CI logic, onboarding
+├── .github/workflows/      # GitHub Actions CI/CD workflows
+├── README.md               # This file
+├── LICENSE                 # Custom MIT license with restrictions
+├── pyproject.toml          # Python project configuration
+└── requirements.txt        # Dependency management
 ```
 
 ---
@@ -37,8 +47,8 @@ Supported tasks:
 ## 🚀 Quickstart (Dev)
 
 ```bash
-# Install dependencies (e.g. via pyenv or poetry)
-pip install -r requirements.lock
+# Install dependencies
+pip install -r requirements.txt
 
 # Validate prompts
 python cli/validate_prompt.py
@@ -46,121 +56,100 @@ python cli/validate_prompt.py
 # Score prompts using test data
 python cli/score_prompt.py
 
-# Run pipeline (e.g. locally or via ECS)
+# Run pipeline
 python cli/run_pipeline.py --input test.json --output output.json
 ```
 
 ---
 
-## 🧰 Prompt Topics & Lifecycle
+## 🔄 Prompt Lifecycle
 
-Each task lives under `prompts/<topic>/` and includes:
+Prompts follow a structured lifecycle and are modular by design:
 
-- `prompts/`: Prompt templates (`*_v1.txt`, `*_v2.txt`, …)
-- `metadata.yaml`: Version tracking, inputs/outputs, current dev/prod pointer
-- `examples/`: Sample input/output pairs
-- `tests/`: Unit test coverage and behavior validation
+* `00-templates/`: Jinja-style or YAML building blocks
+* `01-examples/`: Input/output test pairs (used in CI)
+* `02-production/`: Active YAML prompts for use in inference
+* `03-metadata/`: Formal definitions, input/output schema, changelogs
+* `04-evals/`: Evaluation output from CI scoring pipelines
+* `98-drafts/`: Early-stage, unvalidated experiments
 
-Prompts are managed like code: versioned, validated, and tested via CI/CD.
-
----
-
-## 🛠️ CLI Tools
-
-All located in `cli/`, each script is modular and container-ready:
-
-- `validate_prompt.py`: Checks prompt metadata, placeholder syntax, required fields
-- `score_prompt.py`: Runs prompt on example inputs and reports accuracy/F1
-- `run_pipeline.py`: Executes full pipeline (reads raw data, applies prompts, writes sanitized output)
+All prompts are versioned, schema-validated, and CI-tested.
 
 ---
 
-## ☁️ AWS Infrastructure (Terraform)
+## ☁️ Infrastructure (Terraform)
 
-- `infra/aws_s3.tf`: GDPR-compliant S3 buckets with encryption and lifecycle rules
-- `infra/aws_iam.tf`: OIDC IAM roles for ECS and GitHub Actions
-- `infra/ecs_taskdef.json`: ECS Task Definitions for containerized deployment
+* `infra/aws_s3.tf`: GDPR-compliant S3 buckets
+* `infra/aws_iam.tf`: IAM roles for GitHub OIDC, ECS task definitions
+* `infra/ecs_taskdef.json`: Secure deployment configuration
 
-**S3 Folders:**
+### S3 Layout
 
-- `raw_data/`: Unprocessed, possibly PII-containing data (strict access)
-- `sanitized_data/`: Anonymized or classified output (safe for downstream usage)
+* `raw_data/`: Original inputs (PII scope, encrypted)
+* `sanitized_data/`: Outputs (ready for analysis, compliant)
 
 ---
 
-## 🔁 CI/CD with GitHub Actions
+## 🔁 CI/CD Pipeline
 
-Located in `.github/workflows/ci-cd.yml`, our pipeline:
+Defined in `.github/workflows/ci.yml`, the pipeline:
 
-- Validates prompt templates and metadata
-- Runs unit/integration tests
-- Evaluates prompt scoring on test data
-- Builds Docker image, pushes to ECR
-- Deploys to ECS on successful quality gate
-- Auto-rolls back if performance degrades
+* Lints and validates prompt schemas
+* Tests and benchmarks prompt performance
+* Builds Docker containers
+* Pushes to Amazon ECR
+* Deploys to ECS
+* Tags and promotes validated prompt versions
+* Rolls back on threshold violation
 
-**Security:** Uses OIDC authentication – no long-lived AWS credentials stored.
+Security: OIDC-based, no static AWS keys.
 
 ---
 
 ## 🧪 Reproducibility & Audit
 
-- Prompt templates are versioned with changelogs and metrics
-- Data batches and datasets are hashed (SHA-256)
-- All executions log input/output references with prompt version
-- Dockerized environment ensures consistent runtime
-- CloudTrail + S3 access logs track every interaction
-
----
-
-## 📈 Future Enhancements
-
-- Airflow DAG integration for orchestration
-- Real-time monitoring + anomaly detection via CloudWatch
-- Automated scoring on live production samples
-- Full metadata search interface for all prompt versions
+* All prompts have changelogs and schema versions
+* Prompt executions are logged with version + hash
+* Data batches hashed with SHA-256
+* Evaluations stored in `04-evals/`
+* Execution environments Dockerized for consistency
+* CloudTrail + S3 access logging enabled
 
 ---
 
 ## 🛡 Security & Compliance
 
-- 🔐 Encryption at rest (KMS), in transit (TLS)
-- 🧾 IAM Least Privilege: ECS tasks, CI/CD roles
-- 📍 Data residency enforcement (e.g., eu-central-1)
-- 📊 PII minimization + lifecycle deletion (S3 rules)
-- 📓 Prompt audit logging + rollback tags
+* 🔐 KMS-encrypted S3 buckets
+* 📜 TLS in transit, IAM least privilege
+* 📊 CI/CD deploy gates enforce accuracy
+* 🧾 Prompt audit trail with rollback tagging
+* 📍 Region lock & data deletion policies
 
 ---
 
 ## 📄 License
 
-This project is open-source and AWS-native only. No proprietary dependencies. Complies with GDPR and follows best practices for enterprise ML systems.
+This project is licensed under a customized [MIT License](LICENSE.txt "double click") with additional restrictions.
+
+* ✅ Use allowed for non-commercial, research, and internal applications
+* ❌ Commercial use, resale, or model training/fine-tuning on prompt content is prohibited without permission
+
+See [LICENSE](LICENSE.txt "double click") for details.
 
 ---
 
 ## ✍️ Maintainers
 
-- AI DevOps Engineering – `devops@yourcompany.com`
-- Prompt Architects – `prompts@yourcompany.com`
+* Prompt Engineering & Infra: Konstantin Milonas
+* Contact: [i](mailto:prompts@yourcompany.com)nfo@condata.io
 
 ---
 
-## ✅ Status: Bootstrapped
+## ✅ Status: Architect Mode Bootstrapped
 
-Ready for:
+The structure is production-ready and optimized for scalable, secure LLM-based classification pipelines. Ready for:
 
-- Team contributions
-- Prompt onboarding
-- Secure AWS deployment
-
----
-
-
-## 📄 License
-
-This project is licensed under a customized [MIT License ](LICENSE.txt "double-click")with additional restrictions.
-
-You are free to use, modify, and distribute this code for non-commercial purposes.
-**However, commercial usage, SaaS deployment, or using the prompt templates and evaluation logic for model training or reverse engineering is strictly prohibited without prior written permission.**
-
-Please review the full [LICENSE](LICENSE.txt "double-click") file for details.
+* CI/CD integration
+* Team collaboration
+* Secure AWS deployment
+* Structured prompt testing and versioning
