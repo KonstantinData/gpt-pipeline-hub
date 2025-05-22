@@ -1,0 +1,84 @@
+# .github/workflows/ci.yml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-prompts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rye
+        uses: davidB/rye-setup@v1
+        with:
+          version: latest
+
+      - name: Install project dependencies
+        run: rye sync
+
+      - name: Run prompt validator
+        run: rye run python scripts/validate_prompt.py
+
+  evaluate-prompts:
+    runs-on: ubuntu-latest
+    needs: validate-prompts
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rye
+        uses: davidB/rye-setup@v1
+        with:
+          version: latest
+
+      - name: Install project dependencies
+        run: rye sync
+
+      - name: Evaluate prompts
+        run: |
+          for task in $(ls prompts/01-examples/*.jsonl | sed 's#.*/##' | sed 's/.jsonl//'); do
+            echo "Evaluating $task"
+            rye run python scripts/eval_runner.py --task "$task"
+          done
+
+  build-deploy:
+    runs-on: ubuntu-latest
+    needs: evaluate-prompts
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/github-actions-oidc-role
+          aws-region: eu-central-1
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t gpt-pipeline-hub .
+          docker tag gpt-pipeline-hub:latest 123456789012.dkr.ecr.eu-central-1.amazonaws.com/gpt-pipeline-hub:latest
+
+      - name: Push image to ECR
+        run: |
+          docker push 123456789012.dkr.ecr.eu-central-1.amazonaws.com/gpt-pipeline-hub:latest
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster gpt-pipeline-cluster \
+            --service gpt-pipeline-service \
+            --force-new-deployment
