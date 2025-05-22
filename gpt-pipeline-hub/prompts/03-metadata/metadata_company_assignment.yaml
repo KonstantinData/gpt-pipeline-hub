@@ -1,4 +1,4 @@
-name: Company Assignment
+name: C
 description: Matches input entities to known company identities from internal or external registries.
 current_version_dev: Company Assignment_v1.txt
 current_version_prod: Company Assignment_v1.txt
