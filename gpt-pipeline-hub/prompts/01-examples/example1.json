@@ -1,0 +1,10 @@
+{
+  "input": {
+    "part_number": "1234-AB",
+    "title": "LED signal light, 24V DC, IP67",
+    "manufacturer": "SignalTech GmbH"
+  },
+  "expected": {
+    "result": "Processed {\"part_number\": \"1234-AB\", ...}"
+  }
+}
