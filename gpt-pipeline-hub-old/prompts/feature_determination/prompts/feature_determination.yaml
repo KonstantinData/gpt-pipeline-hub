@@ -40,11 +40,20 @@ output_format: |
 output_schema:
   features:
     type: list
-    item:
-      name: string
-      value: string
-      unit: optional string
-      source: enum [title, part_number, manufacturer]
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        unit:
+          type: string
+          optional: true
+        source:
+          type: string
+          enum: ["title", "part_number", "manufacturer"]
+
 
 constraints:
   - Respond only with valid JSON strictly matching the output format (no explanation text).
