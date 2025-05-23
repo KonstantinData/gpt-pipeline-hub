@@ -1,58 +1,64 @@
+
 import argparse
 import json
 import os
 from pathlib import Path
 from datetime import datetime
 import yaml
+from typing import List, Dict
 
-# Optional: Simuliere OpenAI API Response (Mock)
-def call_model(prompt: str, input_data: dict) -> dict:
-    return {"result": f"Processed {input_data}"}  # Dummy
+# --- Config ---
+PROMPT_DIR = Path("prompts/02-production")
+EXAMPLES_DIR = Path("prompts/01-examples")
 
-# Lade Prompt aus Datei
-def load_prompt(task_id: str) -> str:
-    prompt_path = Path("prompts/02-production") / f"{task_id}.yaml"
-    with open(prompt_path, encoding="utf-8") as f:
-        prompt_def = yaml.safe_load(f)
-    return prompt_def
+# --- Helpers ---
+def load_prompt_yaml(task_id: str) -> dict:
+    path = PROMPT_DIR / f"{task_id}.yaml"
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
-# Lade Beispiele aus examples-Verzeichnis
-def load_examples(task_id: str):
-    examples_dir = Path("prompts/01-examples") / task_id
+def load_json_examples(task_id: str) -> List[Dict]:
+    dir_path = EXAMPLES_DIR / task_id
     examples = []
-    for file in examples_dir.glob("*.json"):
+    for file in dir_path.glob("*.json"):
         with open(file, encoding="utf-8") as f:
             examples.append(json.load(f))
     return examples
 
-# Hauptausführung
-def run_eval(task_id: str):
-    prompt_def = load_prompt(task_id)
-    examples = load_examples(task_id)
+def call_model(prompt: dict, input_data: dict) -> dict:
+    # Simulate API call – replace with actual call if needed
+    return {"result": f"Processed {input_data}"}
+
+def evaluate(task_id: str) -> None:
+    prompt_def = load_prompt_yaml(task_id)
+    examples = load_json_examples(task_id)
 
     results = []
-    for example in examples:
-        input_data = example["input"]
-        expected = example["expected"]
-        response = call_model(prompt_def["role"], input_data)
+    for ex in examples:
+        input_data = ex["input"]
+        expected = ex["expected"]
+        actual = call_model(prompt_def, input_data)
 
         results.append({
             "input": input_data,
             "expected": expected,
-            "actual": response,
-            "match": response == expected
+            "actual": actual
         })
 
-    eval_dir = Path(f"prompts/04-evals/{task_id}")
-    eval_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.utcnow().isoformat(timespec="seconds")
-    output_file = eval_dir / f"results_{timestamp}.json"
-    with open(output_file, "w", encoding="utf-8") as f:
+    timestamp = datetime.utcnow().isoformat()
+    out_path = Path("evals") / f"{task_id}_{timestamp}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
-    print(f"✅ Evaluation results saved to: {output_file}")
+    print(f"✅ Evaluation saved to {out_path}")
+
+# --- CLI Entry ---
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate a prompt against input examples.")
+    parser.add_argument("task_id", help="Name of the task prompt (without extension)")
+    args = parser.parse_args()
+
+    evaluate(args.task_id)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run prompt evaluation")
-    parser.add_argument("--task", required=True, help="Task ID, e.g. 'feature_determination_v1'")
-    args = parser.parse_args()
-    run_eval(args.task)
+    main()
