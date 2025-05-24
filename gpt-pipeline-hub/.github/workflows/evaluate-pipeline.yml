@@ -1,0 +1,41 @@
+name: Evaluate Pipeline
+
+on:
+  workflow_dispatch:   # Manuell aus GitHub UI auslösbar
+  push:
+    paths:
+      - 'prompts/**'
+      - 'scripts/eval_runner.py'
+      - 'eval_chain.py'
+      - 'token_cost_summary.py'
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.lock
+
+    - name: 🚀 Run evaluation pipeline
+      run: python eval_chain.py
+
+    - name: 💰 Summarize token usage
+      run: python token_cost_summary.py
+
+    - name: 📤 Upload evaluation results
+      uses: actions/upload-artifact@v3
+      with:
+        name: eval-results
+        path: |
+          evals/*.json

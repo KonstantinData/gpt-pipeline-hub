@@ -1,0 +1,38 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Evaluation Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>📊 LLM Evaluation Dashboard</h1>
+
+    <form method="post" action="/run">
+        <button type="submit">▶️ Run Evaluation Pipeline</button>
+    </form>
+
+    <h2>🔍 Last Evaluation Summary</h2>
+    {% if summary %}
+        <ul>
+            <li><strong>Features:</strong> {{ summary.feature_count }}</li>
+            <li><strong>Use Cases:</strong> {{ summary.use_case_count }}</li>
+            <li><strong>Industries:</strong> {{ summary.industry_count }}</li>
+            <li><strong>Companies:</strong> {{ summary.company_count }}</li>
+            <li><strong>New Companies:</strong> {{ summary.new_company_count }}</li>
+            <li><strong>Total Cost (USD):</strong> {{ summary.total_cost_usd }}</li>
+            <li><strong>Timestamp:</strong> {{ summary.timestamp }}</li>
+        </ul>
+
+        <h3>📥 Downloads</h3>
+        <ul>
+            <li><a href="/download/pipeline_summary.json">pipeline_summary.json</a></li>
+            <li><a href="/download/token_costs.json">token_costs.json</a></li>
+            <li><a href="/download/token_costs_summary.json">token_costs_summary.json</a></li>
+        </ul>
+    {% else %}
+        <p>No evaluation results found yet.</p>
+    {% endif %}
+</body>
+</html>
