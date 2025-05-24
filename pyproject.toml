@@ -1,0 +1,29 @@
+[project]
+name = "gpt-pipeline-hub"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Konstantin Milonas", email = "info@condata.io" }
+]
+dependencies = [
+    "pyyaml>=6.0.2",
+    "dotenv>=0.9.9",
+    "openai>=1.82.0",
+    "python-dotenv>=1.1.0",
+]
+readme = "README.md"
+requires-python = ">= 3.13"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gpt_pipeline_hub"]
