@@ -1,10 +1,12 @@
 # apprunner.yaml
 # ------------------------------------------
+# apprunner.yaml
+# ------------------------------------------
 # Purpose:
 #   Configure AWS App Runner to build and deploy using Dockerfile
 # Required for: GitHub-connected source deployments
 
-runtime: docker
+version: 1.0
 build:
   dockerfilePath: Dockerfile
   context: ./
