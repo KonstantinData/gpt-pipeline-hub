@@ -4,9 +4,7 @@
 #   Configure AWS App Runner to build and deploy using Dockerfile
 # Required for: GitHub-connected source deployments
 
-version: 2023-08-01
 runtime: docker
 build:
   dockerfilePath: Dockerfile
   context: ./
-
