@@ -1,23 +1,27 @@
-# Dockerfile for GPT Pipeline Hub using Rye
+# gpt-pipeline-hub/Dockerfile
+# ------------------------------------------
+# Purpose:
+#   Containerize the FastAPI evaluation pipeline for deployment on AWS AppRunner
+
 FROM python:3.11-slim
 
-# System dependencies
-RUN apt-get update && apt-get install -y curl unzip && rm -rf /var/lib/apt/lists/*
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Install Rye
-ENV RYE_VERSION=latest
-RUN curl -sSf https://rye.astral.sh/get | bash
-ENV PATH="/root/.rye/shims:/root/.rye/bin:$PATH"
-
-# Set workdir
+# Set working directory
 WORKDIR /app
+
+# Install dependencies
+COPY requirements.lock requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
 # Copy project files
 COPY . /app
 
-# Sync dependencies with Rye
-RUN rye sync --no-lock
+# Expose port for AppRunner
+EXPOSE 8080
 
-# Set entrypoint (can be overridden)
-ENTRYPOINT ["rye", "run"]
-CMD ["python", "cli/run_pipeline.py"]
+# Start the FastAPI app using Uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
